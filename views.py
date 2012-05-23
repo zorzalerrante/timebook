@@ -17,12 +17,6 @@ import search
 
 def render_json(request, data):
     return render_to_response('json.html', {'json': json.dumps(data)}, context_instance=RequestContext(request), mimetype='application/json')
-
-    
-def prepare_person_json(person):
-    return json.loads(serializers.serialize("json", [person]))[0]
-    #return {'id': person.id, 'name': person.name, 'uri': person.uri, 'depiction': person.depiction}
-
     
 def prepare_resource_json(resource):
     return json.loads(serializers.serialize("json", [resource]))[0]
@@ -51,16 +45,17 @@ def rest_profile(request, profile_id):
     for m in meta:
         if m.meta_name == 'abstract':
             abstract = json.loads(m.meta_value)
-    c = prepare_person_json(profile)
+    c = prepare_resource_json(profile)
     
-    c['following'] = [prepare_person_json(f) for f in following]
-    c['followers'] = [prepare_person_json(f) for f in followers]
+    c['following'] = [prepare_resource_json(f) for f in following]
+    c['followers'] = [prepare_resource_json(f) for f in followers]
     c['groups'] = [prepare_resource_json(g) for g in groups]
-    #c['meta'] = [{'key': m.meta_name, 'value': json.loads(m.meta_value)} for m in meta]
+    c['meta'] = [{'key': m.meta_name, 'value': json.loads(m.meta_value)} for m in meta]
     c['abstract'] = abstract
     
     # TODO: here we should add a decorator mechanism or something similar for applications to add their information
     c['works'] = [prepare_resource_json(w) for w in profile.work_set.all()]
+    c['quotes'] = [prepare_resource_json(w) for w in profile.quote_set.all()]
     
     return render_json(request, c)
     
@@ -72,9 +67,7 @@ def rest_category(request, category_id):
     json_serializer = serializers.get_serializer("json")
 
     c = prepare_resource_json(group)
-    #c['members'] = [prepare_person_json(m) for m in members]
     c['members'] = json.loads(serializers.serialize("json", members))
-    
     
     return render_json(request, c)
     

@@ -63,9 +63,9 @@ def import_ontology(filename, max_count=None):
         except profiles.models.Person.DoesNotExist:
             continue
             
-        print author.name
-        print values
-        print ''
+        #print author.name
+        #print values
+        #print ''
         
         if works.models.Work.objects.filter(uri=values['resource']).count() > 0:
             continue
@@ -88,8 +88,6 @@ def import_ontology(filename, max_count=None):
             meta = works.models.WorkMeta(work=work, meta_name=key, meta_value=json.dumps(value))
             meta.save()
     
-        i += 1
-    
         #if created:
         #    meta = profiles.models.PersonMeta(person=person, meta_name='ontology_types', meta_value=json.dumps(list(types)))
         #    meta.save()
@@ -100,38 +98,45 @@ def import_ontology(filename, max_count=None):
             
 def import_titles(filename):
     
-    i = 0
+    i = 1
     for values in profiles.importutils.iter_entities_from(filename):            
         if not u'rdf-schema#label' in values:
             continue
           
         try:      
-            work = profiles.models.Work.objects.get(uri=values['resource'])
-        except profiles.models.Work.DoesNotExist:
+            work = works.models.Work.objects.get(uri=values['resource'])
+        except works.models.Work.DoesNotExist:
             continue
             
         work.name = values[u'rdf-schema#label'][0]
 
-        print work.name
+        #print work.name
         work.save()
-
-        
-        ##if rejected_types.intersection(types):
-        #    continue
-        
-        #types = types.difference(removable_types)
-        
-        #person, created = profiles.models.Person.objects.get_or_create(uri=values['resource'])
-    
         i += 1
-    
-        #if created:
-        #    meta = profiles.models.PersonMeta(person=person, meta_name='ontology_types', meta_value=json.dumps(list(types)))
-        #    meta.save()
-            #print values['resource'], 'saved', types
-            
-        #    if max_count > 0 and i == max_count:
-        #        break  
+        
+        print i, work.name
 
-import_ontology(properties)
-#import_titles(labels)
+def import_images(filename):
+    
+    i = 1
+    for values in profiles.importutils.iter_entities_from(filename):            
+        if not u'depiction' in values:
+            continue
+          
+        try:      
+            work = works.models.Work.objects.get(uri=values['resource'])
+        except works.models.Work.DoesNotExist:
+            continue
+            
+        work.depiction = values[u'depiction'][0]
+
+        #print work.name
+        work.save()
+        i += 1
+        
+        print i, work.name, work.depiction
+
+
+#import_ontology(properties)
+import_titles(labels)
+#import_images(images)

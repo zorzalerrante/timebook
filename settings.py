@@ -4,6 +4,8 @@ import os
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
+USE_DJANGO_SERVER = True
+
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
 )
@@ -90,13 +92,15 @@ TEMPLATE_DIRS = (
 )
 
 DBPEDIA_DUMPS_DIR = '/home/egraells/data/dbpedia'
+WIKIQUOTE_DUMPS_DIR = '/home/egraells/data/wikiquote'
 
 CACHE_BACKEND = 'db://cache'
 
 INSTALLED_APPS = (
     'timebook.profiles',
     'timebook.works',
-    'timebook.fbusers'
+    'timebook.fbusers',
+    'timebook.quotes'
     #'django.contrib.auth',
     #'django.contrib.contenttypes',
     #'django.contrib.sessions',

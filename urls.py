@@ -13,7 +13,7 @@ urlpatterns = patterns('',
     (r'^api/user/login/', 'fbusers.views.login')
 )
 
-if settings.DEBUG:
+if settings.USE_DJANGO_SERVER:
 
     urlpatterns.extend(patterns('',
         (r'^site/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.TIMEBOOK_DIR + '/site'})

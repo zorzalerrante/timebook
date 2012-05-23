@@ -324,11 +324,12 @@ def build_abstracts(filename):
 def build_images(filename):
     def test_images(person, values):
         try:
-            print person.uri, values['depiction'][0]
+            #print person.uri, values['depiction'][0]
             person.depiction = values['depiction'][0]
             person.save()
         except Exception as e:
-            print str(e)
+            #print str(e)
+            pass
         
     profiles.importutils.iter_on_relevant_entities(filename, test_images)
 
@@ -362,14 +363,14 @@ if __name__ == '__main__':
     print 'done'
 
     print 'profiles...'
-    #build_profiles()
+    build_profiles()
     print 'done'
 
     print 'abstracts....'
-    #build_abstracts(abstracts)
+    build_abstracts(abstracts)
     print 'done'
 
     print 'images...'
-    build_images(images)
+    #build_images(images)
     print 'done'
 
