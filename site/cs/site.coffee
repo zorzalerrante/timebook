@@ -18,6 +18,41 @@ fb_login = (callback) -> FB.login(callback,
 
 fb_logout = (callback) -> FB.logout(callback)
 
+# helper functions
+
+append_list = (elements, selection, ul_class, title, link_func) ->
+    if elements? and elements.length? and elements.length > 0
+        selection.append("<h3>#{title}</h3>")
+        ul = $("<ul class=\"#{ul_class}\"/>").appendTo(selection)
+        console.log ul
+        for e in elements
+            ul.append("<li>#{link_func(e)}</li>")
+
+draw_profile_list = (parent, members) ->
+    member = parent.selectAll('div.member').data(members)
+
+    member.exit().remove()
+
+    div = member.enter()
+        .append('div').attr('class', 'member')
+    
+    row = div.append('div').attr('class', 'row-fluid')
+    
+    row.append('div').attr('class', 'span1')
+        .append('img')
+            .attr('src', (d) -> if d.fields.depiction then d.fields.depiction else "http://placehold.it/90x90")
+            .attr('class', 'thumbnail pull-left')
+       
+    right = row.append('div').attr('class', 'span11')
+    
+    right.append('h3')
+        .append('a')
+        .text((d) -> d.fields.name)
+        .attr('href', (d) -> "#profile#{d.pk}")
+        
+    right.append('p')
+        .text((d) -> "#{d.fields.birth_year} &ndash; #{d.fields.death_year}")
+
 # the elements of the page
 
 container = $$({},
@@ -67,32 +102,39 @@ list = $$({}, '<div><div class="content"></div> </div>')
 
 person = $$({}, 
     '''
-    <div class="page-header">
-        <h2 />
-        <p class="abstract" data-bind="abstract" />
-    </div>
     <div class="row-fluid">
         <div class="span3 profile">
-            <ul class="thumbnails"><li><a><img class="thumbnail depiction" data-bind="src depiction" /></a></li></ul>
-            <div class="works" />
+            <ul class="thumbnails"><li><a><img class="thumbnail depiction" src="http://placehold.it/240x270" /></a></li></ul>
         </div>
-        <div class="span5 connections">
-            <ul class="links">
-                <li class="dbpedia-link">&rarr;<a href="" data-bind="href uri">See <span data-bind="name"/> on DBPedia</a></li>
-            </ul>
-            <div class="following"/>
-            <div class="followers"/>
-        </div>
-        <div class="span4 categories">
-            <div class="groups"/>
+        <div class="span9">
+            <div class="page-header">
+                <h2 />
+                <p class="abstract"/>
+            </div>
+            <div class="tabbable">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a href="#tab-works" data-toggle="tab">Works</a></li>
+                    <li><a href="#tab-connections" data-toggle="tab">Connections</a></li>
+                    <li><a href="#tab-groups" data-toggle="tab">Groups</a></li>
+                    <li><a href="#tab-quotes" data-toggle="tab">Quotes</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane active" id="tab-works"></div>
+                    <div class="tab-pane" id="tab-connections"></div>
+                    <div class="tab-pane" id="tab-groups"></div>
+                    <div class="tab-pane" id="tab-quotes"></div>
+                </div>
+            </div>
         </div>
     </div>
     ''',
      
     '''
     & .abstract { font-style: italic; color: #777777; }
-    & .profile  img.thumbnail { max-width: 210px; }
-    & .connections img.thumbnail { max-height: 45px; }
+    & .profile  img.thumbnail { max-width: 270px; }
+    & #tab-connections img.thumbnail { max-height: 45px; }
+    & #tab-works .thumbnail img { max-width: 120px; }
+    & div.member { margin-bottom: 1em; }
     ''',   
          
     'change': () ->    
@@ -101,39 +143,50 @@ person = $$({},
         console.log @view.$('h2')
         
         @view.$('h2').text(data.fields.name)
+        @view.$('p.abstract').text(data.abstract)
         
-    
-        append_list = (elements, selection, ul_class, title, link_func) ->
-            if elements? and elements.length? and elements.length > 0
-                selection.append("<h3>#{title}</h3>")
-                ul = $("<ul class=\"#{ul_class}\"/>").appendTo(selection)
-                console.log ul
-                for e in elements
-                    ul.append("<li>#{link_func(e)}</li>")
-            
-        append_list(data.followers, @view.$('.followers'), 'thumbnails', 'Followers', 
+        if data.fields.depiction
+            @view.$('img.depiction').attr('src', data.fields.depiction)
+        #else 
+        #    @view.$('img.depiction').attr('src', "http://placehold.it/#{240}x#{270}")
+                
+        followers_div = d3.select(@view.$('#tab-connections')[0]).append('div')
+        followers_div.append('h3').text('Followers')
+        draw_profile_list(followers_div, data.followers)
+              
+        following_div = d3.select(@view.$('#tab-connections')[0]).append('div')
+        following_div.append('h3').text('Following')
+        draw_profile_list(following_div, data.following)
+                
+        '''
+        append_list(data.followers, @view.$('#tab-connections'), 'thumbnails', 'Followers', 
           (e) -> "<a class=\"profile_link\" href=\"#profile#{e.pk}\" title=\"#{e.fields.name}\"><img class=\"thumbnail\" src=\"#{e.fields.depiction}\" /></a>"
         )
         
-        append_list(data.following, @view.$('.following'), 'thumbnails', 'Following', 
+        append_list(data.following, @view.$('#tab-connections'), 'thumbnails', 'Following', 
           (e) -> "<a class=\"profile_link\" href=\"#profile#{e.pk}\" title=\"#{e.fields.name}\"><img class=\"thumbnail\" src=\"#{e.fields.depiction}\" /></a>"
         )
         
         @view.$('.profile_link').tooltip()
         @view.$('.profile_link').click((e) -> $(@).tooltip('hide'))
+        '''
         
-        @view.$('img.thumbnail').error(() -> $(@).unbind("error").attr("src", "http://placehold.it/#{90}x#{90}"))
+        @view.$('#tab-connections img.thumbnail').error(() -> $(@).unbind("error").attr("src", "http://placehold.it/#{90}x#{90}"))
+        @view.$('img.thumbnail').error(() -> $(@).unbind("error").attr("src", "http://placehold.it/#{240}x#{270}"))
         
         
-        append_list(data.groups, @view.$('.groups'), 'nav nav-tabs nav-stacked', 'Groups', 
+        append_list(data.groups, @view.$('#tab-groups'), 'nav nav-tabs nav-stacked', 'Groups', 
           (e) -> "<a class=\"category_link\" href=\"#category#{e.pk}\">#{e.fields.name}</a>"
         )
         
-        append_list(data.works, @view.$('.works'), 'unstyled', 'Works', 
-          (e) -> "<a class=\"work_link\" href=\"#work#{e.pk}\">#{e.fields.name}</a>"
+        append_list(data.works, @view.$('#tab-works'), 'thumbnails', 'Works', 
+          (e) -> "<div class=\"thumbnail\"><img src=\"#{e.fields.depiction}\" /><h5><a class=\"work_link\" href=\"#work#{e.pk}\">#{e.fields.name}</a></h5></div>"
         )
+        
+        for quote in data.quotes
+            @view.$('#tab-quotes').append("<blockquote><p>#{quote.fields.content}</p></blockquote>")
 
-    'change:depiction': () -> @view.$('img.depiction').error(() -> $(@).unbind("error").attr("src", "http://placehold.it/#{210}x#{240}"))
+    #'change:depiction': () -> @view.$('img.depiction').error(() -> $(@).unbind("error").attr("src", "http://placehold.it/#{210}x#{240}"))
       
 )
 
@@ -154,16 +207,33 @@ category = $$({},
          
     'change': () ->
         console.log 'category'
+        category = @model.get() 
+        console.log category
         members = @model.get('members')
         console.log members
-        ul = $('<ul class="media-grid"/>').appendTo(@view.$('div.members'))
-        console.log ul
+        #ul = $('<ul class="media-grid"/>').appendTo(@view.$('div.members'))
+        #console.log ul
+        #console.log @view.$('div.members')
+        
+        draw_profile_list(@view.$('div.members')[0], members)
+        '''
+        list = d3.select(@view.$('div.members')[0]).append('ul').attr('class', 'thumbnails')
         
         for e in members
-            ul.append("<li><a class=\"profile_link\" href=\"#profile#{e.pk}\" title=\"#{e.fields.name}\"><img class=\"thumbnail\" src=\"#{e.fields.depiction}\" /></a></li>")
+            container = list.append('li')
+            container.append('div').attr('class', 'span3 thumbnail')
+                .append('a').attr('class', 'profile_link').attr('href', "#profile#{e.pk}").attr('title', e.fields.name)
+                .append('img').attr('class', 'thumbnail').attr('src', e.fields.depiction)
+                
+            bio_data = container.append('div').attr('class', 'span9')
+                
+            bio_data.append('h3').text(e.fields.name)
+            
+            #list.append("<li><a class=\"profile_link\" href=\"#profile#{e.pk}\" title=\"#{e.fields.name}\"><img class=\"thumbnail\" src=\"#{e.fields.depiction}\" /></a></li>")
 
         @view.$('.profile_link').tooltip()
         @view.$('.profile_link').click((e) -> $(@).tooltip('hide'))
+        '''
         @view.$('img.thumbnail').error(() -> $(@).unbind("error").attr("src", "http://placehold.it/#{120}x#{120}"))
 
 )
@@ -218,6 +288,7 @@ header.view.$("#tags").typeahead(
         url: "/api/search/"
         method: "GET"
         preProcess: (data) ->
+            links = []
             links = ("<a href=\"##{result.type}#{result.id}\">#{result.name}</a>" for result in data)
             links
     updater: (item) -> 
