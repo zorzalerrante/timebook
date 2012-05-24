@@ -35,7 +35,7 @@ for i in xrange(0, total_users, 10000):
         indexed = u.name
         writer.add_document(names=u.name, title=u.name, id=unicode(u.id), type=u'profile')
 
-categories = Category.objects.all()
+categories = Category.objects.filter(count__gt=1)
 total_categories = categories.count()
 
 for i in xrange(0, total_categories, 10000):
