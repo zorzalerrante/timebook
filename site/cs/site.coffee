@@ -1,23 +1,3 @@
-#some helper facebook functions
-
-fb_init = () ->
-    FB.init
-        appId      : '389305971111798'
-        status     : true
-        cookie     : true
-        xfbml      : true
-   
-fb_is_logged_in = false 
-
-fb_check_status = (callback) -> if FB? then FB.getLoginStatus(callback)
-
-fb_login = (callback) -> FB.login(callback, 
-    scope: "user_about_me,user_interests,user_likes,email"
-    perms: "user_about_me,user_interests,user_likes,email"
-)
-
-fb_logout = (callback) -> FB.logout(callback)
-
 # helper functions
 
 append_list = (elements, selection, ul_class, title, link_func) ->
@@ -28,22 +8,22 @@ append_list = (elements, selection, ul_class, title, link_func) ->
         for e in elements
             ul.append("<li>#{link_func(e)}</li>")
 
-draw_profile_list = (parent, members) ->
-    member = parent.selectAll('div.member').data(members)
+draw_profile_list = (parent, members, class_name='member') ->
+    member = parent.selectAll("div.#{class_name}").data(members)
 
     member.exit().remove()
 
     div = member.enter()
-        .append('div').attr('class', 'member')
+        .append('div').attr('class', class_name)
     
     row = div.append('div').attr('class', 'row-fluid')
     
-    row.append('div').attr('class', 'span1')
+    row.append('div').attr('class', 'span2')
         .append('img')
             .attr('src', (d) -> if d.fields.depiction then d.fields.depiction else "http://placehold.it/90x90")
             .attr('class', 'thumbnail pull-left')
        
-    right = row.append('div').attr('class', 'span11')
+    right = row.append('div').attr('class', 'span10')
     
     right.append('h3')
         .append('a')
@@ -51,29 +31,56 @@ draw_profile_list = (parent, members) ->
         .attr('href', (d) -> "#profile#{d.pk}")
         
     right.append('p')
-        .text((d) -> "#{d.fields.birth_year} &ndash; #{d.fields.death_year}")
+        .text((d) -> 
+            if d.fields.birth_year and d.fields.death_year
+                "#{d.fields.birth_year} - #{d.fields.death_year}"
+            else if d.fields.birth_year
+                "#{d.fields.birth_year}"
+            else if d.fields.death_year
+                "- #{d.fields.death_year}"
+            else
+                null
+        )
+        
+draw_work_list = (parent, works, class_name='work') ->
+    work = parent.selectAll("div.#{class_name}").data(works)
 
+    work.exit().remove()
+
+    div = work.enter()
+        .append('div').attr('class', class_name)
+    
+    row = div.append('div').attr('class', 'row-fluid')
+    
+    row.append('div').attr('class', 'span2')
+        .append('img')
+            .attr('src', (d) -> if d.fields.depiction then d.fields.depiction else "http://placehold.it/90x90")
+            .attr('class', 'thumbnail pull-left')
+       
+    right = row.append('div').attr('class', 'span10')
+    
+    right.append('h3')
+        .append('a')
+        .text((d) -> d.fields.name)
+        .attr('href', (d) -> "#profile#{d.pk}")
 # the elements of the page
 
 container = $$({},
     '''
-    <div class="container-fluid">
-
-    </div>
+    <div class="container-fluid"></div>
     '''
 )
 
 header = $$({},
     '''
     <div class="navbar navbar-fixed-top" data-scrollspy="scrollspy">
-        
         <div class="navbar-inner">
             <div class="container-fluid">
                 <a class="brand" href="">TimeBook</a>
                 <ul class="nav">  
                   <li><div id="fb-root"></div><div class="fb-login-button" id="login"></div></li>
                 </ul>
-                <form class="navbar-search pull-left">
+                <form class="navbar-search pull-right">
                   <input id="tags" placeholder="Search" />
                 </form>
                 </div>
@@ -113,14 +120,14 @@ person = $$({},
             </div>
             <div class="tabbable">
                 <ul class="nav nav-tabs">
-                    <li class="active"><a href="#tab-works" data-toggle="tab">Works</a></li>
-                    <li><a href="#tab-connections" data-toggle="tab">Connections</a></li>
-                    <li><a href="#tab-groups" data-toggle="tab">Groups</a></li>
-                    <li><a href="#tab-quotes" data-toggle="tab">Quotes</a></li>
+                    <li class="active"><a href="#tab-connections" data-toggle="tab"><i class="icon icon-random"></i> Connections</a></li>
+                    <li><a href="#tab-works" data-toggle="tab"><i class="icon icon-picture"></i> Works</a></li>
+                    <li><a href="#tab-groups" data-toggle="tab"><i class="icon icon-th"></i> Groups</a></li>
+                    <li><a href="#tab-quotes" data-toggle="tab"><i class="icon icon-comment"></i> Quotes</a></li>
                 </ul>
                 <div class="tab-content">
-                    <div class="tab-pane active" id="tab-works"></div>
-                    <div class="tab-pane" id="tab-connections"></div>
+                    <div class="tab-pane active" id="tab-connections"></div>
+                    <div class="tab-pane" id="tab-works"></div>
                     <div class="tab-pane" id="tab-groups"></div>
                     <div class="tab-pane" id="tab-quotes"></div>
                 </div>
@@ -132,9 +139,10 @@ person = $$({},
     '''
     & .abstract { font-style: italic; color: #777777; }
     & .profile  img.thumbnail { max-width: 270px; }
-    & #tab-connections img.thumbnail { max-height: 45px; }
+    & #tab-connections img.thumbnail { max-height: 45px; max-width: 90%; }
     & #tab-works .thumbnail img { max-width: 120px; }
     & div.member { margin-bottom: 1em; }
+    & div.work { margin-bottom: 1em; }
     ''',   
          
     'change': () ->    
@@ -147,30 +155,17 @@ person = $$({},
         
         if data.fields.depiction
             @view.$('img.depiction').attr('src', data.fields.depiction)
-        #else 
-        #    @view.$('img.depiction').attr('src', "http://placehold.it/#{240}x#{270}")
                 
-        followers_div = d3.select(@view.$('#tab-connections')[0]).append('div')
-        followers_div.append('h3').text('Followers')
-        draw_profile_list(followers_div, data.followers)
-              
-        following_div = d3.select(@view.$('#tab-connections')[0]).append('div')
+        connections_div = d3.select(@view.$('#tab-connections')[0]).append('div').attr('class', 'row-fluid')
+        
+        following_div = connections_div.append('div').attr('class', 'span6')
         following_div.append('h3').text('Following')
         draw_profile_list(following_div, data.following)
-                
-        '''
-        append_list(data.followers, @view.$('#tab-connections'), 'thumbnails', 'Followers', 
-          (e) -> "<a class=\"profile_link\" href=\"#profile#{e.pk}\" title=\"#{e.fields.name}\"><img class=\"thumbnail\" src=\"#{e.fields.depiction}\" /></a>"
-        )
         
-        append_list(data.following, @view.$('#tab-connections'), 'thumbnails', 'Following', 
-          (e) -> "<a class=\"profile_link\" href=\"#profile#{e.pk}\" title=\"#{e.fields.name}\"><img class=\"thumbnail\" src=\"#{e.fields.depiction}\" /></a>"
-        )
-        
-        @view.$('.profile_link').tooltip()
-        @view.$('.profile_link').click((e) -> $(@).tooltip('hide'))
-        '''
-        
+        followers_div = connections_div.append('div').attr('class', 'span6')
+        followers_div.append('h3').text('Followers')
+        draw_profile_list(followers_div, data.followers)
+                              
         @view.$('#tab-connections img.thumbnail').error(() -> $(@).unbind("error").attr("src", "http://placehold.it/#{90}x#{90}"))
         @view.$('img.thumbnail').error(() -> $(@).unbind("error").attr("src", "http://placehold.it/#{240}x#{270}"))
         
@@ -179,15 +174,14 @@ person = $$({},
           (e) -> "<a class=\"category_link\" href=\"#category#{e.pk}\">#{e.fields.name}</a>"
         )
         
-        append_list(data.works, @view.$('#tab-works'), 'thumbnails', 'Works', 
-          (e) -> "<div class=\"thumbnail\"><img src=\"#{e.fields.depiction}\" /><h5><a class=\"work_link\" href=\"#work#{e.pk}\">#{e.fields.name}</a></h5></div>"
-        )
+        works_div = d3.select(@view.$('#tab-works')[0]).append('div').attr('class', 'row-fluid')
+        draw_work_list(works_div, data.works)
+        
+        @view.$('#tab-works img.thumbnail').error(() -> $(@).unbind("error").attr("src", "http://placehold.it/#{120}x#{120}"))
         
         for quote in data.quotes
             @view.$('#tab-quotes').append("<blockquote><p>#{quote.fields.content}</p></blockquote>")
 
-    #'change:depiction': () -> @view.$('img.depiction').error(() -> $(@).unbind("error").attr("src", "http://placehold.it/#{210}x#{240}"))
-      
 )
 
 
@@ -195,14 +189,19 @@ category = $$({},
     '''
     <div class="row-fluid">
       <div class="span12">
-        <h2 data-bind="name"/>
-        <div class="members"></div>
+        <div class="page-header">
+            <h2></h2>
+        </div>
+      </div>
+      <div class="row-fluid">
+            <div class="members span12"></div>
       </div>
     </div>
     ''',
      
     '''
     & .members img.thumbnail { max-height: 120px; }
+    & div.member { margin-bottom: 1em; }
     ''',   
          
     'change': () ->
@@ -215,7 +214,11 @@ category = $$({},
         #console.log ul
         #console.log @view.$('div.members')
         
-        draw_profile_list(@view.$('div.members')[0], members)
+        container = d3.select(@view.$('div.members')[0])
+        
+        @view.$('h2').text(category.fields.name)
+        
+        draw_profile_list(container, members)
         '''
         list = d3.select(@view.$('div.members')[0]).append('ul').attr('class', 'thumbnails')
         
@@ -283,17 +286,19 @@ $(window).bind('hashchange', (e) -> prepare_content())
 
 # the autocomplete search
 
+icons = {'profile': 'user', 'category': 'th'}
 header.view.$("#tags").typeahead(
     ajax: 
         url: "/api/search/"
         method: "GET"
         preProcess: (data) ->
             links = []
-            links = ("<a href=\"##{result.type}#{result.id}\">#{result.name}</a>" for result in data)
+            links = ("<a href=\"##{result.type}#{result.id}\"><i class=\"icon icon-#{icons[result.type]}\"></i> #{result.name}</a>" for result in data)
             links
     updater: (item) -> 
-        re = /href=\"(.+)\"/ig
+        re = /href=\"(.+)\"><i/ig
         parts = re.exec(item)
+        console.log parts
         window.location.hash = parts[1]
         ''
 )
@@ -312,8 +317,29 @@ fb_ping_timebook = (user_id) ->
                 return
             header.view.$('#login').text("<a href=\"\">#{json.data.name}</a>")
             console.log json
-    
+ 
+#some helper facebook functions
 
+fb_init = () ->
+    FB.init
+        appId      : '389305971111798'
+        status     : true
+        cookie     : true
+        xfbml      : true
+   
+fb_is_logged_in = false 
+
+fb_check_status = (callback) -> if FB? then FB.getLoginStatus(callback)
+
+fb_login = (callback) -> FB.login(callback, 
+    scope: "user_about_me,user_interests,user_likes,email"
+    perms: "user_about_me,user_interests,user_likes,email"
+)
+
+fb_logout = (callback) -> FB.logout(callback)   
+
+# do the facebook integration. disabled for now
+'''
 fb_init()
 
 fb_check_status (response) -> 
@@ -331,4 +357,5 @@ FB.Event.subscribe 'auth.login', (response) ->
 
 FB.Event.subscribe 'auth.logout', (response) ->
     header.view.$('#login').text('<a href="">Login</a>')
-    
+'''
+

@@ -62,7 +62,7 @@ def rest_profile(request, profile_id):
     
 def rest_category(request, category_id):
     group = get_object_or_404(Category, pk=category_id)
-    members = group.person_set.all()
+    members = group.person_set.exclude(name='')
 
     json_serializer = serializers.get_serializer("json")
 
