@@ -10,6 +10,7 @@ Timebook is a project started on the Hack4Europe event organized by Europeana on
 * Coffeescript - the language in which we wrote the client side scripting.
 * Agility.js - a tool in Javascript to code the client site structure.
 * Whoosh - the search engine that powers our search box.
+* Twitter Bootstrap - the design elements and layouts.
   
 ## Data Sources
 
