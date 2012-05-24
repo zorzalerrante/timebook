@@ -278,6 +278,8 @@ home = $$({},
             <h1>Welcome to Timebook</h1>
 
             <p>Timebook is a project started on the Hack4Europe event organized by Europeana on the Museu Picasso at Barcelona on June 2011. It's a project by <strong>Luca Chiarandini</strong> &amp; <strong>Eduardo Graells</strong>, PhD students at Universitat Pompeu Fabra / Yahoo! Research Barcelona. This is made as an example of what a social network of the past would be.</p>
+            
+            <p>To start, search for something on the search bar!</p>
         </div>
         
         <div class="page-header">
@@ -309,8 +311,8 @@ home = $$({},
                 <h3>Data Sources</h3>
 
                 <ul>
-                    <li>DBPedia - profile data (bio, basic information, connections, works, etc) and groups (built from categories extracted from Wikipedia)</li>
-                    <li>WikiQuote - quotes</li> 
+                    <li><a href="http://dbpedia.org/About">DBPedia</a> - we parse linked data extracted from Wikipedia and build profiles (bio, basic information, connections, works, etc) and groups (built from categories).</li>
+                    <li><a href="https://en.wikiquote.org/wiki/Main_Page">WikiQuote</a> - we parse the content from WikiQuote's dumps and match some of them (not all because the data is not linked) to our profiles.</li> 
                 </ul>
             </div>
         </div>
