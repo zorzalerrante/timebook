@@ -20,6 +20,7 @@ data_path = settings.DBPEDIA_DUMPS_DIR
 
 ontology = data_path + '/instance_types_en.nt.bz2'
 properties = data_path + '/mappingbased_properties_en.nt.bz2'
+person_data = data_path + '/persondata_en.nt.bz2'
 abstracts = data_path + '/short_abstracts_en.nt.bz2'
 images = data_path + '/images_en.nt.bz2'
 categories = data_path + '/article_categories_en.nt.bz2'
@@ -115,16 +116,20 @@ def import_properties(filename):
             #print values['resource'], 'not a recognized person'
             continue
             
+        '''
         if profiles.models.PersonMeta.objects.filter(person=person).count() > 1:
             i += 1
             
             if i == total_persons:
                 break
             continue
-            
+        
+        ''' 
         i += 1
         del values['resource']
-        #print values.keys()
+        print person.name
+        print values.keys()
+        print ''
         
         for (key, value) in values.iteritems():
             meta = profiles.models.PersonMeta(person=person, meta_name=key, meta_value=json.dumps(value))
@@ -258,17 +263,20 @@ def build_profiles():
         for m in meta:
             values = json.loads(m.meta_value)
             
+            print m.meta_name, m.meta_value
             
             if m.meta_name == 'name':
                 p.name = values[0].strip()
             if m.meta_name == 'birthDate':
                 match = dateRegexp.match(values[0].strip())
-                p.birth_year = int(match.group(1))
+                if match:
+                    p.birth_year = int(match.group(1))
             if m.meta_name == 'birthYear':
                 p.birth_year = int(values[0].strip())
             if m.meta_name == 'deathDate':
                 match = dateRegexp.match(values[0].strip())
-                p.death_year = int(match.group(1))
+                if match:
+                    p.death_year = int(match.group(1))
             if m.meta_name == 'deathYear':
                 p.death_year = int(values[0].strip())
             #if p.name or p.birth_year or p.death_year:
@@ -342,6 +350,7 @@ if __name__ == '__main__':
 
     print 'properties...'
     #import_properties(properties)
+    #import_properties(person_data)
     print 'done'
 
     print 'relevants...'
@@ -363,7 +372,7 @@ if __name__ == '__main__':
     print 'done'
 
     print 'profiles...'
-    build_profiles()
+    #build_profiles()
     print 'done'
 
     print 'abstracts....'
