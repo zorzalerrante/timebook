@@ -300,8 +300,8 @@ home = $$({},
                 <h3>Tools</h3>
 
                 <ul>
-                    <li>Python - the language in which we have coded the site and the data import/parsing.
-                    <li><a href="https://www.djangoproject.com/">django - the web framework that powers the site's API.</li>
+                    <li>Python - the language in which we have coded the site and the data import/parsing.</li>
+                    <li><a href="https://www.djangoproject.com/">django</a> - the web framework that powers the site's API.</li>
                     <li><a href="http://coffeescript.org/">Coffeescript</a> - the language in which we wrote the client side scripting.</li>
                     <li><a href="http://agilityjs.com/">Agility.js</a> - a tool in Javascript to code the client site structure.</li>
                     <li><a href="https://bitbucket.org/mchaput/whoosh/wiki/Home">Whoosh</a> - the search engine that powers our search box.</li>
