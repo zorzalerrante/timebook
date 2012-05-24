@@ -23,7 +23,7 @@ schema = Schema(names=TEXT, title=TEXT(stored=True), id=ID(stored=True), type=TE
 ix = create_in(settings.WHOOSH_INDEX_DIR, schema)
 writer = ix.writer()
 
-users = Person.objects.filter(is_relevant=True)
+users = Person.objects.filter(is_relevant=True).exclude(name='')
 total_users = users.count()
 
 for i in xrange(0, total_users, 10000):
@@ -32,10 +32,16 @@ for i in xrange(0, total_users, 10000):
     
     for u in users[i:end]:
         print u.name
-        indexed = u.name
-        writer.add_document(names=u.name, title=u.name, id=unicode(u.id), type=u'profile')
+        try:
+            abstract = u.personmeta_set.filter(meta_name='abstract')[0].meta_value
+        except Exception:
+            abstract = ''
+            
+        indexed = u.name + u' ' + abstract
+        print indexed
+        writer.add_document(names=indexed, title=u.name, id=unicode(u.id), type=u'profile')
 
-categories = Category.objects.filter(count__gt=1)
+categories = Category.objects.filter(count__gt=1).exclude(name='')
 total_categories = categories.count()
 
 for i in xrange(0, total_categories, 10000):
