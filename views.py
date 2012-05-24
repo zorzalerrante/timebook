@@ -37,7 +37,7 @@ def rest_profile(request, profile_id):
         else:
             followers.append(relation.source)
     
-    groups = profile.groups.all()
+    groups = profile.groups.exclude(name='')
     meta = PersonMeta.objects.filter(person=profile)
     
     abstract = ''
@@ -54,7 +54,7 @@ def rest_profile(request, profile_id):
     c['abstract'] = abstract
     
     # TODO: here we should add a decorator mechanism or something similar for applications to add their information
-    c['works'] = [prepare_resource_json(w) for w in profile.work_set.all()]
+    c['works'] = [prepare_resource_json(w) for w in profile.work_set.exclude(name='')]
     c['quotes'] = [prepare_resource_json(w) for w in profile.quote_set.all()]
     
     return render_json(request, c)
