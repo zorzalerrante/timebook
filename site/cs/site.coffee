@@ -71,6 +71,9 @@ container = $$({},
     '''
 )
 
+
+
+
 header = $$({},
     '''
     <div class="navbar navbar-fixed-top" data-scrollspy="scrollspy">
@@ -262,14 +265,74 @@ show_category = (category_id) ->
     ).load()
     list.append(current_item, '.content')  
     
+show_home = () ->
+    if current_item? then current_item.destroy()
+    current_item = $$(home, {})
+    list.append(current_item, '.content')
+    
+home = $$({},
+    '''
+    <div id="home">
+        <div class="hero-unit">
+        
+            <h1>Welcome to Timebook</h1>
+
+            <p>Timebook is a project started on the Hack4Europe event organized by Europeana on the Museu Picasso at Barcelona on June 2011. It's a project by <strong>Luca Chiarandini</strong> &amp; <strong>Eduardo Graells</strong>, PhD students at Universitat Pompeu Fabra / Yahoo! Research Barcelona. This is made as an example of what a social network of the past would be.</p>
+        </div>
+        
+        <div class="page-header">
+            <h2>Credits</h2>
+        </div>
+        
+        <div class="row-fluid">
+            <div class="span4">
+                <h3>Authors</h3>
+                
+                Luca Chiarandini (<code>luca.chiarandini [a] gmail</code>) and Eduardo Graells (<code>eduardo.graells [a] gmail</code>). Both are PhD students at Universitat Pompeu Fabra under the supervision of Dr. Ricardo Baeza-Yates and Dr. Alejandro Jaimes.
+                
+                You can find the <a href="http://github.com/Carnby/timebook">source code for Timebook in github</a>.
+                
+            </div>
+            <div class="span4">
+                
+                <h3>Tools</h3>
+
+                <ul>
+                    <li>Python - the language in which we have coded the site and the data import/parsing.
+                    <li><a href="https://www.djangoproject.com/">django - the web framework that powers the site's API.</li>
+                    <li><a href="http://coffeescript.org/">Coffeescript</a> - the language in which we wrote the client side scripting.</li>
+                    <li><a href="http://agilityjs.com/">Agility.js</a> - a tool in Javascript to code the client site structure.</li>
+                    <li><a href="https://bitbucket.org/mchaput/whoosh/wiki/Home">Whoosh</a> - the search engine that powers our search box.</li>
+                </ul>
+            </div>
+            <div class="span4">
+                <h3>Data Sources</h3>
+
+                <ul>
+                    <li>DBPedia - profile data (bio, basic information, connections, works, etc) and groups (built from categories extracted from Wikipedia)</li>
+                    <li>WikiQuote - quotes</li> 
+                </ul>
+            </div>
+        </div>
+
+    </div>
+    '''
+)
+    
 prepare_content = () ->
     pid = window.location.hash.match(/\#profile([0-9]+)/)
     console.log pid
-    if pid? then show_person(pid[1])
+    if pid?
+        show_person(pid[1])
+        return
   
     cid = window.location.hash.match(/\#category([0-9]+)/)
     console.log cid
-    if cid? then show_category(cid[1])
+    if cid?
+        show_category(cid[1])
+        return 
+        
+    show_home()
 
 # our structure
 
