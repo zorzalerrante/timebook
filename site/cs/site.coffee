@@ -60,9 +60,8 @@ draw_work_list = (parent, works, class_name='work') ->
     right = row.append('div').attr('class', 'span10')
     
     right.append('h3')
-        .append('a')
         .text((d) -> d.fields.name)
-        .attr('href', (d) -> "#profile#{d.pk}")
+        
 # the elements of the page
 
 container = $$({},
