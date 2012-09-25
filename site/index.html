@@ -4,14 +4,14 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <title>Timebook - A Social network built from Linked Data</title>
-    <link href="libs/bootstrap/css/bootswatch-cerulean.min.css" rel="stylesheet" />
+    <link href="libs/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <script type="text/javascript" src="libs/jquery-1.7.2.min.js"></script>
     <script type="text/javascript" src="libs/agility.js" charset="utf-8"></script>
     <script type="text/javascript" src="libs/d3.v2.min.js"></script>
+	<script type="text/javascript" src="libs/underscore-min.js"></script>
     <script type="text/javascript" src="libs/bootstrap/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="libs/bootstrap/external/typeahead.js"></script>
     <!--
-    <script type="text/javascript" src="libs/timeline-embed.js"></script>
     <script type="text/javascript" src="http://connect.facebook.net/en_US/all.js"></script>
     -->
     
@@ -19,10 +19,69 @@
     body {
         padding-top: 50px;
     }
+
+li.result { width: 110px; }
+
+div.result.highlight, li.result .thumbnail.highlight {
+	background-color: #efefef;
+}
+
+li.result .thumbnail.highlight {
+	border-color: steelblue;
+}
+
+path.line {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+path.area {
+  fill: #e7e7e7;
+}
+
+.axis {
+  shape-rendering: crispEdges;
+}
+
+.x.axis line {
+  stroke: #fff;
+}
+
+.x.axis .minor {
+  stroke-opacity: .5;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.y.axis line, .y.axis path {
+  fill: none;
+  stroke: #000;
+}
+
+.x.axis line.tick {
+	stroke: #fff;
+}
+
+rect.background {
+	fill: #efefef;
+}
+
+circle.profile-bubble {
+	opacity: 0.8;
+}
+
     </style>
 </head>
 
 <body>
+<script type="text/coffeescript" src='cs/functions.coffee'></script>
+<script type="text/coffeescript" src='cs/home.coffee'></script>
+<script type="text/coffeescript" src='cs/search.coffee'></script>
+<script type="text/coffeescript" src='cs/person.coffee'></script>
+<script type="text/coffeescript" src='cs/category.coffee'></script>
 <script type="text/coffeescript" src='cs/site.coffee'></script>
 <script type="text/javascript" src='libs/coffee-script.js'></script>
 </body>
