@@ -10,6 +10,7 @@ urlpatterns = patterns('',
     (r'^api/profile/(?P<profile_id>\d+)/$', 'views.rest_profile'),
     (r'^api/category/(?P<category_id>\d+)/$', 'views.rest_category'),
     (r'^api/search/', 'views.rest_search'),
+    (r'^api/explore/', 'views.rest_explore'),
     (r'^api/user/login/', 'fbusers.views.login')
 )
 

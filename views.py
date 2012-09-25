@@ -83,7 +83,30 @@ def rest_search(request):
             results['query'] = form.cleaned_data['query']
 
             if hits:
-                for h in hits:
-                    results['results'].append({'id': h['id'], 'name': h['title'], 'uri': '', 'type': h['type']})
+                results['results'].extend(hits)
 
     return render_json(request, results['results'])
+    
+def rest_explore(request):
+    results = {
+        'query': '', 
+        'users': []
+        
+    }
+    
+    if request.method == 'GET': 
+        form = SearchForm(request.GET)
+        if form.is_valid(): 
+            query = form.cleaned_data['query'].strip() + '*'
+            hits = search.perform_search(query + ' type:profile', limit=100, include_surrogates=True)
+
+            results['query'] = form.cleaned_data['query']
+
+            if hits:
+                results['users'].extend(hits)
+                
+        for user in results['users']:
+            user['categories'] = [c.name for c in Category.objects.filter(person__pk=user['id'])]
+            user['connections'] = Relation.objects.filter(Q(source=user['id'])|Q(target=user['id'])).count()
+
+    return render_json(request, results)
