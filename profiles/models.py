@@ -4,6 +4,7 @@ import timebook.models
 
 class Category(timebook.models.Resource):
     count = models.IntegerField(default=0)
+    avg_score = models.IntegerField(default=0, db_index=True)
     min_year = models.IntegerField(null=True, db_index=True)
     max_year = models.IntegerField(null=True, db_index=True)
     
@@ -15,6 +16,7 @@ class Person(timebook.models.Resource):
     pagerank = models.FloatField(default=0.0)
     groups = models.ManyToManyField(Category, db_index=True)
     relations = models.ManyToManyField('self', db_index=True, symmetrical=False, through='Relation')
+    score = models.IntegerField(default=0, db_index=True)
         
 class PersonMeta(models.Model):
     person = models.ForeignKey(Person, db_index=True)
