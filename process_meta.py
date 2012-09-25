@@ -16,7 +16,7 @@ import django.core.exceptions
 django.core.management.setup_environ(settings)
 
 # aggregators
-from django.db.models import Min, Max
+from django.db.models import Min, Max, Avg
 
 # categories 
 from profiles.models import Category 
@@ -30,7 +30,11 @@ for i in xrange(0, total_count, 1000):
         cat.count = cat.person_set.count()
         cat.min_year = cat.person_set.aggregate(Min('birth_year'))['birth_year__min']
         cat.max_year = cat.person_set.aggregate(Max('birth_year'))['birth_year__max']
-        print cat.pk, cat.name, cat.person_set.count(), cat.min_year, cat.max_year
+        cat.avg_score = cat.person_set.aggregate(Avg('score'))['score__avg']
+        if cat.avg_score == None:
+            cat.avg_score = 0
+            
+        print cat.pk, cat.name, cat.person_set.count(), cat.min_year, cat.max_year, cat.avg_score
         cat.save()
         
 

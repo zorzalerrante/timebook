@@ -6,7 +6,6 @@ try:
     import settings # Assumed to be in the same directory.
     #settings.DISABLE_TRANSACTION_MANAGEMENT = True
 except ImportError:
-    sys.stderr.write("Error: Can't find the file 'settings.py' in the directory containing %r. It appears you've customized things.\nYou'll have to run django-admin.py, passing it your settings module.\n(If the file settings.py does indeed exist, it's causing an ImportError somehow.)\n" % __file__)
     sys.exit(1)
 
 import json
@@ -18,7 +17,15 @@ from profiles.models import *
 
 from whoosh.index import create_in
 from whoosh.fields import *
-schema = Schema(names=TEXT, title=TEXT(stored=True), id=ID(stored=True), type=TEXT(stored=True))
+schema = Schema(
+    description=TEXT(stored=True, phrase=False), 
+    title=TEXT(stored=True), 
+    id=ID(stored=True), 
+    type=TEXT(stored=True),
+    score=NUMERIC(stored=True),
+    score_range=NUMERIC(stored=True),
+    avatar=STORED()
+)
 
 ix = create_in(settings.WHOOSH_INDEX_DIR, schema)
 writer = ix.writer()
@@ -38,8 +45,12 @@ for i in xrange(0, total_users, 10000):
             abstract = ''
             
         indexed = u.name + u' ' + abstract
+        score_range = u.score/5
+        if score_range > 39:
+            score_range = 39
+            
         print indexed
-        writer.add_document(names=indexed, title=u.name, id=unicode(u.id), type=u'profile')
+        writer.add_document(description=indexed, title=u.name, id=unicode(u.id), type=u'profile', score=u.score, score_range=score_range, avatar=u.depiction)
 
 categories = Category.objects.filter(count__gt=1).exclude(name='')
 total_categories = categories.count()
@@ -49,6 +60,11 @@ for i in xrange(0, total_categories, 10000):
     
     for c in categories[i:end]:
         print c.name
-        writer.add_document(names=c.name, title=c.name, id=unicode(c.id), type=u'category')
+        
+        score_range = c.avg_score/5
+        if score_range > 39:
+            score_range = 39
+        
+        writer.add_document(description=c.name, title=c.name, id=unicode(c.id), type=u'category', score=c.avg_score, score_range=score_range)
 
 writer.commit()
